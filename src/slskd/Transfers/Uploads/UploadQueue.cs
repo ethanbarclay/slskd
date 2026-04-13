@@ -238,6 +238,8 @@ namespace slskd.Transfers
                 {
                     Log.Debug("Cleaned up tracking list for {User}; no more queued uploads to track", username);
                 }
+
+                UpdateGauges();
             }
             finally
             {
@@ -269,6 +271,7 @@ namespace slskd.Transfers
                     });
 
                 Log.Debug("Enqueued: {File} for {User} at {Time}", Path.GetFileName(upload.Filename), upload.Username, upload.Enqueued);
+                UpdateGauges();
             }
             finally
             {
@@ -547,6 +550,7 @@ namespace slskd.Transfers
                     Log.Debug("Started: {File} for {User} at {Time}", Path.GetFileName(upload.Filename), upload.Username, upload.Enqueued);
                     Log.Debug("Group {Group} slots: {Used}/{Available}", group.Name, group.UsedSlots, group.Slots);
 
+                    UpdateGauges();
                     return upload;
                 }
 
@@ -556,6 +560,16 @@ namespace slskd.Transfers
             {
                 SyncRoot.Release();
             }
+        }
+
+        private void UpdateGauges()
+        {
+            var allUploads = Uploads.Values.SelectMany(list => list).ToList();
+            var active = allUploads.Count(u => u.Started.HasValue);
+            var queued = allUploads.Count(u => !u.Started.HasValue);
+
+            Telemetry.Metrics.Upload.Active.Set(active);
+            Telemetry.Metrics.Upload.Queued.Set(queued);
         }
     }
 }

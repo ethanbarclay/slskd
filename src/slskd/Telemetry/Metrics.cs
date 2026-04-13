@@ -265,6 +265,61 @@ public static class Metrics
     }
 
     /// <summary>
+    ///     Metrics related to uploads.
+    /// </summary>
+    public static class Upload
+    {
+        /// <summary>
+        ///     Gets a counter representing the total number of bytes uploaded, labeled by username and status.
+        /// </summary>
+        public static Counter BytesTotal { get; } = Prometheus.Metrics.CreateCounter(
+            "slskd_upload_bytes_total",
+            "Total number of bytes uploaded",
+            new CounterConfiguration
+            {
+                LabelNames = new[] { "username", "status" },
+            });
+
+        /// <summary>
+        ///     Gets a counter representing the total number of files uploaded, labeled by username and status.
+        /// </summary>
+        public static Counter FilesTotal { get; } = Prometheus.Metrics.CreateCounter(
+            "slskd_upload_files_total",
+            "Total number of files uploaded",
+            new CounterConfiguration
+            {
+                LabelNames = new[] { "username", "status" },
+            });
+
+        /// <summary>
+        ///     Gets a gauge representing the number of currently active (in-progress) uploads.
+        /// </summary>
+        public static Gauge Active { get; } = Prometheus.Metrics.CreateGauge("slskd_uploads_active", "Number of currently active uploads");
+
+        /// <summary>
+        ///     Gets a gauge representing the number of currently queued uploads.
+        /// </summary>
+        public static Gauge Queued { get; } = Prometheus.Metrics.CreateGauge("slskd_uploads_queued", "Number of currently queued uploads");
+
+        /// <summary>
+        ///     Gets a gauge representing the total bytes of all files currently in the upload queue.
+        /// </summary>
+        public static Gauge QueueBytes { get; } = Prometheus.Metrics.CreateGauge("slskd_upload_queue_bytes", "Total bytes of files currently in the upload queue");
+
+        /// <summary>
+        ///     Gets a histogram representing the duration of completed uploads in seconds, labeled by username.
+        /// </summary>
+        public static Histogram DurationSeconds { get; } = Prometheus.Metrics.CreateHistogram(
+            "slskd_upload_duration_seconds",
+            "Duration of completed uploads in seconds",
+            new HistogramConfiguration
+            {
+                LabelNames = new[] { "username" },
+                Buckets = Histogram.ExponentialBuckets(1, 2, 14), // 1s to ~4.5 hours
+            });
+    }
+
+    /// <summary>
     ///     Metrics related to the distributed network.
     /// </summary>
     public static class DistributedNetwork

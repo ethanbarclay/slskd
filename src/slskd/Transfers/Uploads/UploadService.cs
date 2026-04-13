@@ -204,6 +204,11 @@ namespace slskd.Transfers.Uploads
 
             Governor = new UploadGovernor(userService, optionsMonitor);
             Queue = new UploadQueue(userService, optionsMonitor);
+
+            // force static initialization of upload metrics so they appear at /metrics immediately
+            Telemetry.Metrics.Upload.Active.Set(0);
+            Telemetry.Metrics.Upload.Queued.Set(0);
+            Telemetry.Metrics.Upload.QueueBytes.Set(0);
         }
 
         /// <summary>
@@ -462,6 +467,16 @@ namespace slskd.Transfers.Uploads
                     Transfer = transfer,
                 });
 
+                Telemetry.Metrics.Upload.BytesTotal.WithLabels(transfer.Username, "completed").Inc(transfer.BytesTransferred);
+                Telemetry.Metrics.Upload.FilesTotal.WithLabels(transfer.Username, "completed").Inc();
+                Telemetry.Metrics.Upload.QueueBytes.Dec(transfer.Size);
+
+                if (transfer.StartedAt.HasValue && transfer.EndedAt.HasValue)
+                {
+                    var duration = (transfer.EndedAt.Value - transfer.StartedAt.Value).TotalSeconds;
+                    Telemetry.Metrics.Upload.DurationSeconds.WithLabels(transfer.Username).Observe(duration);
+                }
+
                 return transfer;
             }
             catch (NotFoundException ex)
@@ -647,6 +662,8 @@ namespace slskd.Transfers.Uploads
                 }
 
                 context.SaveChanges();
+
+                Telemetry.Metrics.Upload.QueueBytes.Inc(localFileLength);
 
                 Log.Information("Successfully enqueued upload of {Filename} to {Username} (id: {Id})", filename, username, id);
 
@@ -1014,6 +1031,15 @@ namespace slskd.Transfers.Uploads
             try
             {
                 Update(t);
+
+                if (t.Direction == TransferDirection.Upload)
+                {
+                    var status = state == TransferStates.Cancelled ? "cancelled" : "failed";
+                    Telemetry.Metrics.Upload.BytesTotal.WithLabels(t.Username, status).Inc(t.BytesTransferred);
+                    Telemetry.Metrics.Upload.FilesTotal.WithLabels(t.Username, status).Inc();
+                    Telemetry.Metrics.Upload.QueueBytes.Dec(t.Size);
+                }
+
                 return true;
             }
             catch (Exception ex)
