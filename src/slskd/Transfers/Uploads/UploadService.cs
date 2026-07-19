@@ -493,6 +493,11 @@ namespace slskd.Transfers.Uploads
                     Telemetry.Metrics.Transfers.Uploads.Completed.AverageSpeed.Observe(transfer.AverageSpeed);
                 }, cancellationToken);
 
+                Telemetry.Metrics.Upload.BytesTotal.WithLabels(username, "completed").Inc(transfer.BytesTransferred);
+                Telemetry.Metrics.Upload.FilesTotal.WithLabels(username, "completed").Inc(1);
+                if (transfer.AverageSpeed > 0)
+                    Telemetry.Metrics.Upload.DurationSeconds.WithLabels(username).Observe(transfer.BytesTransferred / transfer.AverageSpeed);
+
                 EventBus.Raise(new UploadFileCompleteEvent
                 {
                     Timestamp = transfer.EndedAt.Value,
@@ -517,6 +522,9 @@ namespace slskd.Transfers.Uploads
                     Telemetry.Metrics.Transfers.Uploads.Completed.Failed.Inc(1);
                 }, cancellationToken);
 
+                Telemetry.Metrics.Upload.BytesTotal.WithLabels(username, "failed").Inc(transfer.BytesTransferred);
+                Telemetry.Metrics.Upload.FilesTotal.WithLabels(username, "failed").Inc(1);
+
                 throw;
             }
             catch (Exception ex) when (ex is OperationCanceledException || ex is TimeoutException)
@@ -533,6 +541,9 @@ namespace slskd.Transfers.Uploads
                     Telemetry.Metrics.Transfers.Uploads.Completed.Failed.Inc(1);
                 }, cancellationToken);
 
+                Telemetry.Metrics.Upload.BytesTotal.WithLabels(username, "failed").Inc(transfer.BytesTransferred);
+                Telemetry.Metrics.Upload.FilesTotal.WithLabels(username, "failed").Inc(1);
+
                 throw;
             }
             catch (Exception ex)
@@ -548,6 +559,9 @@ namespace slskd.Transfers.Uploads
                 {
                     Telemetry.Metrics.Transfers.Uploads.Completed.Failed.Inc(1);
                 }, cancellationToken);
+
+                Telemetry.Metrics.Upload.BytesTotal.WithLabels(username, "failed").Inc(transfer.BytesTransferred);
+                Telemetry.Metrics.Upload.FilesTotal.WithLabels(username, "failed").Inc(1);
 
                 throw;
             }
