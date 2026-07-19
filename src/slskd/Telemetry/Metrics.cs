@@ -621,4 +621,23 @@ public static class Metrics
                 Buckets = Histogram.ExponentialBuckets(0.1, 2, 11),
             });
     }
+
+    public static class Upload
+    {
+        public static Counter BytesTotal { get; } = Prometheus.Metrics.CreateCounter(
+            "slskd_upload_bytes_total", "Total number of bytes uploaded, labeled by user",
+            new CounterConfiguration { LabelNames = new[] { "username", "status" } });
+
+        public static Counter FilesTotal { get; } = Prometheus.Metrics.CreateCounter(
+            "slskd_upload_files_total", "Total number of files uploaded, labeled by user",
+            new CounterConfiguration { LabelNames = new[] { "username", "status" } });
+
+        public static Histogram DurationSeconds { get; } = Prometheus.Metrics.CreateHistogram(
+            "slskd_upload_duration_seconds", "Duration of completed uploads in seconds, labeled by user",
+            new HistogramConfiguration
+            {
+                LabelNames = new[] { "username" },
+                Buckets = Histogram.ExponentialBuckets(1, 2, 14),
+            });
+    }
 }
