@@ -493,10 +493,10 @@ namespace slskd.Transfers.Uploads
                     Telemetry.Metrics.Transfers.Uploads.Completed.AverageSpeed.Observe(transfer.AverageSpeed);
                 }, cancellationToken);
 
-                Telemetry.Metrics.Upload.BytesTotal.WithLabels(username, "completed").Inc(transfer.BytesTransferred);
-                Telemetry.Metrics.Upload.FilesTotal.WithLabels(username, "completed").Inc(1);
+                Telemetry.Metrics.Upload.BytesTotal.WithLabels(transfer.Username, "completed").Inc(transfer.BytesTransferred);
+                Telemetry.Metrics.Upload.FilesTotal.WithLabels(transfer.Username, "completed").Inc(1);
                 if (transfer.AverageSpeed > 0)
-                    Telemetry.Metrics.Upload.DurationSeconds.WithLabels(username).Observe(transfer.BytesTransferred / transfer.AverageSpeed);
+                    Telemetry.Metrics.Upload.DurationSeconds.WithLabels(transfer.Username).Observe(transfer.BytesTransferred / transfer.AverageSpeed);
 
                 EventBus.Raise(new UploadFileCompleteEvent
                 {
@@ -522,8 +522,8 @@ namespace slskd.Transfers.Uploads
                     Telemetry.Metrics.Transfers.Uploads.Completed.Failed.Inc(1);
                 }, cancellationToken);
 
-                Telemetry.Metrics.Upload.BytesTotal.WithLabels(username, "failed").Inc(transfer.BytesTransferred);
-                Telemetry.Metrics.Upload.FilesTotal.WithLabels(username, "failed").Inc(1);
+                Telemetry.Metrics.Upload.BytesTotal.WithLabels(transfer.Username, "failed").Inc(transfer.BytesTransferred);
+                Telemetry.Metrics.Upload.FilesTotal.WithLabels(transfer.Username, "failed").Inc(1);
 
                 throw;
             }
@@ -541,8 +541,8 @@ namespace slskd.Transfers.Uploads
                     Telemetry.Metrics.Transfers.Uploads.Completed.Failed.Inc(1);
                 }, cancellationToken);
 
-                Telemetry.Metrics.Upload.BytesTotal.WithLabels(username, "failed").Inc(transfer.BytesTransferred);
-                Telemetry.Metrics.Upload.FilesTotal.WithLabels(username, "failed").Inc(1);
+                Telemetry.Metrics.Upload.BytesTotal.WithLabels(transfer.Username, "failed").Inc(transfer.BytesTransferred);
+                Telemetry.Metrics.Upload.FilesTotal.WithLabels(transfer.Username, "failed").Inc(1);
 
                 throw;
             }
@@ -560,8 +560,8 @@ namespace slskd.Transfers.Uploads
                     Telemetry.Metrics.Transfers.Uploads.Completed.Failed.Inc(1);
                 }, cancellationToken);
 
-                Telemetry.Metrics.Upload.BytesTotal.WithLabels(username, "failed").Inc(transfer.BytesTransferred);
-                Telemetry.Metrics.Upload.FilesTotal.WithLabels(username, "failed").Inc(1);
+                Telemetry.Metrics.Upload.BytesTotal.WithLabels(transfer.Username, "failed").Inc(transfer.BytesTransferred);
+                Telemetry.Metrics.Upload.FilesTotal.WithLabels(transfer.Username, "failed").Inc(1);
 
                 throw;
             }
